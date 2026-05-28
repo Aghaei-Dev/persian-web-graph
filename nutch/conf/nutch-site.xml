@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+
+  <property>
+    <name>http.agent.name</name>
+    <value>UT-WebGraph-Crawler</value>
+  </property>
+
+  <property>
+    <name>http.agent.description</name>
+    <value>Academic crawl for Persian web graph analysis (University of Tehran assignment)</value>
+  </property>
+
+  <property>
+    <name>http.agent.email</name>
+    <value>rasacodev@gmail.com</value>
+  </property>
+
+  <property>
+    <name>http.robots.agents</name>
+    <value>UT-WebGraph-Crawler,*</value>
+  </property>
+
+  <property>
+    <name>http.timeout</name>
+    <value>15000</value>
+  </property>
+
+  <property>
+    <name>fetcher.threads.fetch</name>
+    <value>10</value>
+  </property>
+
+  <property>
+    <name>fetcher.server.delay</name>
+    <value>1.0</value>
+    <description>Politeness: 1 second between requests to the same host.</description>
+  </property>
+
+  <property>
+    <name>fetcher.max.crawl.delay</name>
+    <value>10</value>
+  </property>
+
+  <property>
+    <name>db.max.outlinks.per.page</name>
+    <value>200</value>
+    <description>Cap outlinks per page; keeps the graph tractable.</description>
+  </property>
+
+  <property>
+    <name>db.ignore.external.links</name>
+    <value>true</value>
+    <description>Stay inside the seed domain — internal links only.</description>
+  </property>
+
+  <property>
+    <name>db.ignore.external.links.mode</name>
+    <value>byDomain</value>
+  </property>
+
+  <property>
+    <name>db.injector.overwrite</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>plugin.includes</name>
+    <value>protocol-okhttp|urlfilter-regex|parse-(html|tika)|index-(basic|anchor)|indexer-solr|scoring-opic|urlnormalizer-(pass|regex|basic)</value>
+  </property>
+
+  <property>
+    <name>parser.character.encoding.default</name>
+    <value>utf-8</value>
+  </property>
+
+  <property>
+    <name>parser.html.outlinks.ignore_tags</name>
+    <value>img,script,style,link</value>
+  </property>
+
+  <property>
+    <name>link.ignore.internal.host</name>
+    <value>false</value>
+    <description>Keep within-host edges so the resulting graph is non-trivial.</description>
+  </property>
+
+  <property>
+    <name>link.ignore.internal.domain</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>link.ignore.limit.page</name>
+    <value>false</value>
+  </property>
+
+</configuration>
