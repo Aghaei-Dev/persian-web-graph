@@ -19,7 +19,7 @@ from urllib.parse import urldefrag, urlparse
 # Loose URL pattern: tolerates whitespace, quotes, angle brackets around the URL.
 URL_RE = re.compile(r"https?://[^\s'\"<>]+", re.IGNORECASE)
 
-# Common ccTLDs that take a 3-part registered domain ("ut.ac.ir", "bbc.co.uk").
+# Common ccTLDs that take a 3-part registered domain ("sharif.ir", "bbc.co.uk").
 _TWO_LEVEL_SLDS = {"ac", "co", "or", "gov", "net", "edu"}
 
 
@@ -139,10 +139,12 @@ def _scan_webgraph_file(path: Path, data: CrawlData, *, outlinks: bool) -> None:
                 data.page(current)
                 if len(urls) >= 2:
                     other = urls[1]
-                    data.edge(current, other) if outlinks else data.edge(other, current)
+                    data.edge(current, other) if outlinks else data.edge(
+                        other, current)
             elif current:
                 other = urls[0]
-                data.edge(current, other) if outlinks else data.edge(other, current)
+                data.edge(current, other) if outlinks else data.edge(
+                    other, current)
 
 
 _TITLE_RE = re.compile(r"\btitle\b\s*[:=]+\s*(.+)", re.IGNORECASE)
@@ -186,8 +188,10 @@ def _scan_segment_file(path: Path, data: CrawlData) -> None:
 def read_all(dump_dir: Path) -> CrawlData:
     data = CrawlData()
     _read_linkdb(dump_dir / "linkdb.txt", data)
-    _read_webgraph_dir(dump_dir / "webgraph" / "outlinks_txt", data, outlinks=True)
-    _read_webgraph_dir(dump_dir / "webgraph" / "inlinks_txt", data, outlinks=False)
+    _read_webgraph_dir(dump_dir / "webgraph" /
+                       "outlinks_txt", data, outlinks=True)
+    _read_webgraph_dir(dump_dir / "webgraph" /
+                       "inlinks_txt", data, outlinks=False)
     _read_segments(dump_dir / "segments_text", data)
     return data
 

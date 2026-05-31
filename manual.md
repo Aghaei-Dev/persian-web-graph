@@ -56,10 +56,10 @@ export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
 Two files together decide which domain Nutch crawls:
 
 - `nutch/urls/seed.txt` — the starting URL, one per line. The default is
-  `https://www.ut.ac.ir/`. Replace it with `https://www.iran.ir/` if you want to run the
+  `https://www.sharif.ir/`. Replace it with `https://www.iran.ir/` if you want to run the
   other variant.
 - `nutch/conf/regex-urlfilter.txt` — the accept rule at the bottom. By default it accepts
-  anything under `*.ut.ac.ir`. If you switched seed, also change this line:
+  anything under `*.sharif.ir`. If you switched seed, also change this line:
 
   ```text
   +^https?://([a-z0-9-]+\.)*ut\.ac\.ir(/|$)
@@ -96,7 +96,7 @@ What gets left behind: `data/crawl/{crawldb,linkdb,segments}/`. None of these ar
 files — they're Hadoop SequenceFiles, hence the next step.
 
 If the run ends with zero fetched pages, the culprit is almost always the URL filter, the
-seed, or `robots.txt`. Try `curl -I https://www.ut.ac.ir/` to make sure the host is even
+seed, or `robots.txt`. Try `curl -I https://www.sharif.ir/` to make sure the host is even
 reachable.
 
 ## Pulling out the dumps
@@ -128,7 +128,7 @@ pip install -r requirements.txt
 Then:
 
 ```bash
-python -m src.cli --dump data/dump --out output --domain ut.ac.ir
+python -m src.cli --dump data/dump --out output --domain sharif.ir
 ```
 
 (`--domain iran.ir` if you crawled the other site.)
@@ -204,8 +204,8 @@ size by in-degree — that's the screenshot most people put in the report.
 - **Crawl runs but `data/dump/webgraph` is empty.** `bin/nutch webgraph` needs at least
   one segment with parsed data; if the first round failed to parse anything, the WebGraph
   job has nothing to chew on. Re-run with `--num-fetchers 1` and watch the parse phase.
-- **Pipeline prints "0 nodes after restricting to ut.ac.ir".** Your dump contains URLs but
-  none with `ut.ac.ir` as registered domain. Either the seed was wrong or you passed the
+- **Pipeline prints "0 nodes after restricting to sharif.ir".** Your dump contains URLs but
+  none with `sharif.ir` as registered domain. Either the seed was wrong or you passed the
   wrong `--domain` flag.
 - **Diameter is reported as `None`.** The largest WCC is a singleton — almost certainly
   means the parser found nodes but no edges. Check `data/dump/webgraph/outlinks_txt/` has
@@ -220,7 +220,7 @@ pip install -r requirements.txt
 
 ./scripts/crawl.sh                                       # ~15-45 min
 ./scripts/export.sh                                      # ~1-3 min
-python -m src.cli --dump data/dump --out output --domain ut.ac.ir
+python -m src.cli --dump data/dump --out output --domain sharif.ir
 ```
 
 Then open `output/metrics.txt`, `output/plots/*.png`, and the `top_*.csv` files. Numbers

@@ -1,4 +1,4 @@
-"""Driver:  python -m src.cli --dump data/dump --out output --domain ut.ac.ir"""
+"""Driver:  python -m src.cli --dump data/dump --out output --domain sharif.ir"""
 
 from __future__ import annotations
 
@@ -9,20 +9,23 @@ from . import analysis, dataset, graph, parse, plots
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Build and analyse a Nutch-derived page graph.")
+    ap = argparse.ArgumentParser(
+        description="Build and analyse a Nutch-derived page graph.")
     ap.add_argument("--dump",   type=Path, default=Path("data/dump"),
                     help="Output of scripts/export.sh.")
     ap.add_argument("--out",    type=Path, default=Path("output"),
                     help="Where to write the graph, metrics, plots and dataset.")
-    ap.add_argument("--domain", default="ut.ac.ir",
-                    help="Registered domain to keep (e.g. ut.ac.ir, iran.ir).")
+    ap.add_argument("--domain", default="sharif.ir",
+                    help="Registered domain to keep (e.g. sharif.ir, sharif.ir).")
     args = ap.parse_args(argv)
 
     raw = parse.read_all(args.dump)
-    print(f"parsed {len(raw.pages)} urls / {len(raw.edges)} edges from {args.dump}")
+    print(
+        f"parsed {len(raw.pages)} urls / {len(raw.edges)} edges from {args.dump}")
 
     data = parse.restrict_to_domain(raw, args.domain)
-    print(f"restricted to {args.domain}: {len(data.pages)} nodes, {len(data.edges)} edges")
+    print(
+        f"restricted to {args.domain}: {len(data.pages)} nodes, {len(data.edges)} edges")
 
     g = graph.build(data)
     graphml, gexf = graph.save(g, args.out)

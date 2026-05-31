@@ -1,8 +1,8 @@
 # Structural analysis of a Persian web subgraph
 
 > Course: Information Retrieval / Web Mining — Spring 2026
-> Seed: `ut.ac.ir`  (swap in `iran.ir` if you ran the alternative crawl)
-> Crawl depth: 2  ·  Page budget: 2 000
+> Seed: `sharif.ir` (swap in `iran.ir` if you ran the alternative crawl)
+> Crawl depth: 2 · Page budget: 2 000
 >
 > Numbers below in `<<…>>` come straight out of `output/metrics.txt`,
 > `output/top_*.csv`, and `output/plots/`. Fill them in after the pipeline run.
@@ -13,12 +13,12 @@ Treat the web as a directed graph: pages are vertices, hyperlinks are edges. Thr
 are reliably true about that graph at scale and have been since Broder et al. (2000): the
 in-degree distribution is heavy-tailed, the local clustering coefficient sits well above
 what you'd get from random rewiring, and the effective diameter is tiny — usually
-*O*(log N). The interesting question for a course assignment is whether a small,
+_O_(log N). The interesting question for a course assignment is whether a small,
 self-contained Persian sub-web (one university domain, ~2 000 pages) already shows the
-same fingerprint, or whether you need to crawl the whole *.ir* TLD before the stylised
+same fingerprint, or whether you need to crawl the whole _.ir_ TLD before the stylised
 facts emerge.
 
-So we run a polite, depth-2 crawl of `ut.ac.ir`, restrict to internal hyperlinks, and
+So we run a polite, depth-2 crawl of `sharif.ir`, restrict to internal hyperlinks, and
 compute the standard battery: degree distributions, clustering coefficient, weakly
 connected components, diameter, PageRank, and HITS. Nothing exotic.
 
@@ -29,33 +29,33 @@ round, and `db.ignore.external.links = true` (mode `byDomain`). Politeness is
 `fetcher.server.delay = 1.0` — one second between hits to the same host. Per-page outlink
 budget is capped at 200 (`db.max.outlinks.per.page`) so a single sitemap-style page can't
 warp the degree distribution. The URL filter rejects every binary asset and accepts only
-`http(s)` URLs whose host matches `*.ut.ac.ir`.
+`http(s)` URLs whose host matches `*.sharif.ir`.
 
 After the crawl, four Nutch jobs (`readdb`, `readlinkdb`, `webgraph + nodedumper`,
 `readseg`) dump everything to text under `data/dump/`. The Python pipeline (`src/parse.py`)
 reads the union of all four, canonicalises URLs (lowercased host, fragment stripped,
-default `/` path), filters to nodes whose registered domain is `ut.ac.ir`, drops
+default `/` path), filters to nodes whose registered domain is `sharif.ir`, drops
 self-loops, and hands the result to NetworkX as a `DiGraph`. The same `CrawlData` object
 is also written out as `dataset/pages.jsonl` (one JSON record per page: URL, title,
 sorted outlinks) and `dataset/edges.csv`.
 
 ## What we measured and how
 
-| Quantity | Code path |
-| --- | --- |
-| In- and out-degree distributions, log-log + log-binned | `src/plots.py` (`loglog_scatter`, `logbin_histogram`) |
-| Average clustering coefficient | `nx.average_clustering` on the undirected view, in `src/analysis.py` |
-| Weakly connected components | `nx.weakly_connected_components`; count + top-5 sizes |
-| Diameter, average shortest path | BFS from up to 300 random sources on the largest WCC, seeded |
-| PageRank | `src/pagerank.py` — power iteration, *d* = 0.85, exactly 20 steps |
-| Hubs and authorities | `src/hits.py` — coupled updates, L2-normalised, 50 iterations |
+| Quantity                                               | Code path                                                            |
+| ------------------------------------------------------ | -------------------------------------------------------------------- |
+| In- and out-degree distributions, log-log + log-binned | `src/plots.py` (`loglog_scatter`, `logbin_histogram`)                |
+| Average clustering coefficient                         | `nx.average_clustering` on the undirected view, in `src/analysis.py` |
+| Weakly connected components                            | `nx.weakly_connected_components`; count + top-5 sizes                |
+| Diameter, average shortest path                        | BFS from up to 300 random sources on the largest WCC, seeded         |
+| PageRank                                               | `src/pagerank.py` — power iteration, _d_ = 0.85, exactly 20 steps    |
+| Hubs and authorities                                   | `src/hits.py` — coupled updates, L2-normalised, 50 iterations        |
 
 Two implementation choices worth justifying:
 
 - **PageRank as a hand-rolled loop instead of `nx.pagerank`.** `nx.pagerank` runs until a
   tolerance is met, and on a 2 000-node graph that's typically far fewer than 20
   iterations. The brief asks for 20 explicitly, so we do 20.
-- **Diameter by BFS sampling.** Exact diameter on the largest WCC is *O*(*V* · *E*),
+- **Diameter by BFS sampling.** Exact diameter on the largest WCC is _O_(_V_ · _E_),
   which is fine for 2 000 nodes but unnecessary. We pick up to 300 source vertices with a
   fixed seed (`random.Random(42)`), BFS from each on the undirected view, and report the
   maximum depth as a (slightly conservative) diameter estimate.
@@ -112,43 +112,43 @@ section subtrees that link inward heavily but rarely link out.
 
 ### By raw in-degree
 
-| Rank | In-degree | URL |
-| --- | --- | --- |
-| 1 | `<<>>` | `<<>>` |
-| 2 | `<<>>` | `<<>>` |
-| 3 | `<<>>` | `<<>>` |
-| 4 | `<<>>` | `<<>>` |
-| 5 | `<<>>` | `<<>>` |
-| 6 | `<<>>` | `<<>>` |
-| 7 | `<<>>` | `<<>>` |
-| 8 | `<<>>` | `<<>>` |
-| 9 | `<<>>` | `<<>>` |
-| 10 | `<<>>` | `<<>>` |
+| Rank | In-degree | URL    |
+| ---- | --------- | ------ |
+| 1    | `<<>>`    | `<<>>` |
+| 2    | `<<>>`    | `<<>>` |
+| 3    | `<<>>`    | `<<>>` |
+| 4    | `<<>>`    | `<<>>` |
+| 5    | `<<>>`    | `<<>>` |
+| 6    | `<<>>`    | `<<>>` |
+| 7    | `<<>>`    | `<<>>` |
+| 8    | `<<>>`    | `<<>>` |
+| 9    | `<<>>`    | `<<>>` |
+| 10   | `<<>>`    | `<<>>` |
 
 ### By PageRank (d = 0.85, 20 iterations)
 
-| Rank | PageRank | URL |
-| --- | --- | --- |
-| 1 | `<<>>` | `<<>>` |
-| 2 | `<<>>` | `<<>>` |
-| 3 | `<<>>` | `<<>>` |
-| 4 | `<<>>` | `<<>>` |
-| 5 | `<<>>` | `<<>>` |
-| 6 | `<<>>` | `<<>>` |
-| 7 | `<<>>` | `<<>>` |
-| 8 | `<<>>` | `<<>>` |
-| 9 | `<<>>` | `<<>>` |
-| 10 | `<<>>` | `<<>>` |
+| Rank | PageRank | URL    |
+| ---- | -------- | ------ |
+| 1    | `<<>>`   | `<<>>` |
+| 2    | `<<>>`   | `<<>>` |
+| 3    | `<<>>`   | `<<>>` |
+| 4    | `<<>>`   | `<<>>` |
+| 5    | `<<>>`   | `<<>>` |
+| 6    | `<<>>`   | `<<>>` |
+| 7    | `<<>>`   | `<<>>` |
+| 8    | `<<>>`   | `<<>>` |
+| 9    | `<<>>`   | `<<>>` |
+| 10   | `<<>>`   | `<<>>` |
 
 ### HITS authorities / hubs
 
-| Authorities | Hubs |
-| --- | --- |
-| `<<>>` | `<<>>` |
-| `<<>>` | `<<>>` |
-| `<<>>` | `<<>>` |
-| `<<>>` | `<<>>` |
-| `<<>>` | `<<>>` |
+| Authorities | Hubs   |
+| ----------- | ------ |
+| `<<>>`      | `<<>>` |
+| `<<>>`      | `<<>>` |
+| `<<>>`      | `<<>>` |
+| `<<>>`      | `<<>>` |
+| `<<>>`      | `<<>>` |
 
 (Top-5 of each, from `output/top_authorities.csv` and `output/top_hubs.csv`. The
 authority and PageRank lists tend to overlap on the navigation hubs; the hubs list
@@ -162,7 +162,7 @@ differently. In-degree treats every inbound link as worth one vote; PageRank wei
 each link by the importance of the page that made it, divided across that page's
 outlinks. They agree on the obvious backbone (home page, top-level menus) and disagree
 on the long tail. Pick a row where the two ranks differ by several places and walk
-through *why* in one sentence — usually it's a page that's reached by many low-value
+through _why_ in one sentence — usually it's a page that's reached by many low-value
 pagination tails (boosted by in-degree) or a page linked to from only a handful of
 high-PageRank pages (boosted by PageRank). HITS authorities behave broadly like
 PageRank here; HITS hubs are a different list almost entirely.
@@ -193,7 +193,7 @@ graph counts them as separate nodes, which inflates the node count slightly.
 export NUTCH_HOME=/opt/nutch
 ./scripts/crawl.sh                                       # ~15-45 min
 ./scripts/export.sh                                      # ~1-3 min
-python -m src.cli --dump data/dump --out output --domain ut.ac.ir
+python -m src.cli --dump data/dump --out output --domain sharif.ir
 ```
 
 Determinism: PageRank's iteration count is fixed; HITS is fixed; the diameter sampler
@@ -203,20 +203,20 @@ plots.
 
 ## References
 
-Brin & Page (1998). *The anatomy of a large-scale hypertextual web search engine.*
+Brin & Page (1998). _The anatomy of a large-scale hypertextual web search engine._
 Computer Networks, 30. — original PageRank.
 
-Kleinberg (1999). *Authoritative sources in a hyperlinked environment.* JACM. — HITS.
+Kleinberg (1999). _Authoritative sources in a hyperlinked environment._ JACM. — HITS.
 
-Broder et al. (2000). *Graph structure in the web.* Computer Networks, 33. — the bow-tie
+Broder et al. (2000). _Graph structure in the web._ Computer Networks, 33. — the bow-tie
 picture and the first credible measurement of web-graph diameter.
 
-Watts & Strogatz (1998). *Collective dynamics of "small-world" networks.* Nature, 393.
+Watts & Strogatz (1998). _Collective dynamics of "small-world" networks._ Nature, 393.
 
-Newman (2005). *Power laws, Pareto distributions and Zipf's law.* Contemporary Physics.
+Newman (2005). _Power laws, Pareto distributions and Zipf's law._ Contemporary Physics.
 — the log-binning recipe used for the second pair of plots.
 
-Hagberg, Schult & Swart (2008). *Exploring network structure, dynamics, and function
-using NetworkX.* SciPy proceedings.
+Hagberg, Schult & Swart (2008). _Exploring network structure, dynamics, and function
+using NetworkX._ SciPy proceedings.
 
 Apache Nutch 1.20 — https://nutch.apache.org/
