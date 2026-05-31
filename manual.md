@@ -6,20 +6,19 @@ computes every metric the brief asks for.
 
 If you just want the cheat sheet, jump to the end.
 
-
 ## What you need installed
 
-Java 11 or 17 (Nutch 1.20 runs on both — `java -version` should print something), Python
+Java 11 or 17 (Nutch 1.22 runs on both — `java -version` should print something), Python
 3.10+, and roughly 1 GB of free disk for the crawl artefacts. The Python side only depends
 on `networkx` and `matplotlib`; everything else is stdlib.
 
-Grab Nutch 1.20 from the Apache archive and untar it somewhere you'll remember:
+Grab Nutch 1.22 from the Apache archive and untar it somewhere you'll remember:
 
 ```bash
 cd /opt
-wget https://downloads.apache.org/nutch/1.20/apache-nutch-1.20-bin.tar.gz
-tar xzf apache-nutch-1.20-bin.tar.gz
-mv apache-nutch-1.20 nutch
+wget https://dlcdn.apache.org/nutch/1.22/apache-nutch-1.22-bin.tar.gz
+tar xzf apache-nutch-1.22-bin.tar.gz
+mv apache-nutch-1.22 nutch
 ```
 
 Then point `NUTCH_HOME` at it (add this to `~/.bashrc` so future shells inherit it):
@@ -35,6 +34,22 @@ export NUTCH_HOME=/opt/nutch
 export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
 ```
 
+also add them in zsh if you have
+
+```bash
+nano ~/.zshrc
+```
+
+then
+
+```bash
+# nutch
+export NUTCH_HOME=/opt/nutch
+
+# java
+export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+
+```
 
 ## Picking the seed
 
@@ -63,7 +78,6 @@ a Nutch crawl to silently "succeed" with no data.)
 You don't need to copy these files into the Nutch install — `scripts/crawl.sh` does that
 for you every run.
 
-
 ## Running the crawl
 
 From the project directory:
@@ -85,7 +99,6 @@ If the run ends with zero fetched pages, the culprit is almost always the URL fi
 seed, or `robots.txt`. Try `curl -I https://www.ut.ac.ir/` to make sure the host is even
 reachable.
 
-
 ## Pulling out the dumps
 
 ```bash
@@ -103,7 +116,6 @@ This runs four Nutch sub-commands and lands plain text under `data/dump/`:
 The Python pipeline takes the union of all four. If one of them is missing or in a
 slightly different format (Nutch's text dumps shift between point releases), the parser
 just skips it; the others usually carry enough signal on their own.
-
 
 ## The Python side
 
@@ -154,7 +166,6 @@ output/
 `dataset/pages.jsonl` is the "crawl dataset of ≥2000 pages and their links" the brief
 asks for as its own deliverable.
 
-
 ## What runs where in the code
 
 - `src/parse.py` — reads all four Nutch dump shapes into a `CrawlData` (pages + edges).
@@ -174,12 +185,10 @@ asks for as its own deliverable.
   and the WCC snapshot.
 - `src/cli.py` — glues all of the above together.
 
-
 ## Gephi (optional)
 
 `webgraph.gexf` opens straight in Gephi. ForceAtlas 2 for layout, colour by PageRank,
 size by in-degree — that's the screenshot most people put in the report.
-
 
 ## Switching to iran.ir mid-stream
 
@@ -187,7 +196,6 @@ size by in-degree — that's the screenshot most people put in the report.
 2. Wipe the old crawl: `rm -rf data/crawl data/dump`.
 3. `./scripts/crawl.sh && ./scripts/export.sh`.
 4. `python -m src.cli --dump data/dump --out output_iran --domain iran.ir`.
-
 
 ## When things go wrong
 
@@ -202,7 +210,6 @@ size by in-degree — that's the screenshot most people put in the report.
 - **Diameter is reported as `None`.** The largest WCC is a singleton — almost certainly
   means the parser found nodes but no edges. Check `data/dump/webgraph/outlinks_txt/` has
   non-empty `part-*` files.
-
 
 ## Cheat sheet
 
