@@ -1,0 +1,10 @@
+Nodes:                7915
+Edges:                66786
+Avg in-degree:        8.4379
+Avg out-degree:       8.4379
+Avg clustering coef:  0.2749
+WCC count:            108
+WCC sizes (top 5):    [7808, 1, 1, 1, 1]
+Largest WCC:          7808
+Diameter (sampled):   10
+Avg shortest path:    4.7396
