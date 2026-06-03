@@ -24,12 +24,17 @@ connected components, diameter, PageRank, and HITS. Nothing exotic.
 
 ## How the data was collected
 
-Crawler: Apache Nutch 1.20 with `bin/crawl` over two rounds, a 1000-URL fetch list per
+Crawler: Apache Nutch 1.20 with `bin/crawl` over four rounds, an 800-URL fetch list per
 round, and `db.ignore.external.links = true` (mode `byDomain`). Politeness is
-`fetcher.server.delay = 1.0` — one second between hits to the same host. Per-page outlink
-budget is capped at 200 (`db.max.outlinks.per.page`) so a single sitemap-style page can't
-warp the degree distribution. The URL filter rejects every binary asset and accepts only
-`http(s)` URLs whose host matches `*.sharif.ir`.
+`fetcher.server.delay = 0.5` — half a second between hits to the same host. Per-page
+outlink budget is capped at 400 (`db.max.outlinks.per.page`) so a single sitemap-style
+page can't warp the degree distribution. The URL filter rejects every binary asset,
+Liferay theme bundle, and control-panel path, and accepts only `http(s)` URLs whose host
+matches `*.sharif.ir`.
+
+Seed list is ten content-rich `*.sharif.ir` hosts (homepage + daily, news, en, farhangi,
+ch, journal, shafaf, language, eri) so round 1 produces broad coverage instead of a
+single hub-and-spoke.
 
 After the crawl, four Nutch jobs (`readdb`, `readlinkdb`, `webgraph + nodedumper`,
 `readseg`) dump everything to text under `data/dump/`. The Python pipeline (`src/parse.py`)
@@ -191,7 +196,7 @@ graph counts them as separate nodes, which inflates the node count slightly.
 
 ```bash
 export NUTCH_HOME=/opt/nutch
-./scripts/crawl.sh                                       # ~15-45 min
+./scripts/crawl.sh                                       # ~30–60 min
 ./scripts/export.sh                                      # ~1-3 min
 python -m src.cli --dump data/dump --out output --domain sharif.ir
 ```

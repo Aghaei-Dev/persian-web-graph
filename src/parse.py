@@ -147,9 +147,16 @@ def _scan_webgraph_file(path: Path, data: CrawlData, *, outlinks: bool) -> None:
                     other, current)
 
 
-_TITLE_RE = re.compile(r"\btitle\b\s*[:=]+\s*(.+)", re.IGNORECASE)
+# Nutch 1.x readseg dumps emit one record per fetched URL. The fields we care
+# about — URL, Title, and per-outlink toUrl — show up in slightly different
+# wrappings across point releases (`Title:`, `title=`, `meta title: ...`),
+# so we match on the leading word loosely.
+_TITLE_RE = re.compile(r"^\s*(?:meta\s+)?title\b\s*[:=]+\s*(.+)$",
+                       re.IGNORECASE | re.MULTILINE)
 _URL_HEAD_RE = re.compile(r"^URL\s*[:=]+\s*(\S+)", re.IGNORECASE)
 _TOURL_RE = re.compile(r"\btoUrl\b\s*[:=]+\s*(\S+)", re.IGNORECASE)
+# Some dumps print outlinks as `outlink: <url> anchor: ...` without `toUrl:`.
+_OUTLINK_RE = re.compile(r"^\s*outlink\s*[:=]+\s*(\S+)", re.IGNORECASE)
 
 
 def _read_segments(root: Path, data: CrawlData) -> None:
@@ -176,9 +183,11 @@ def _scan_segment_file(path: Path, data: CrawlData) -> None:
                 continue
             t = _TITLE_RE.search(line)
             if t:
-                data.pages[current].title = t.group(1).strip()
+                title = t.group(1).strip()
+                if title and not data.pages[current].title:
+                    data.pages[current].title = title
                 continue
-            o = _TOURL_RE.search(line)
+            o = _TOURL_RE.search(line) or _OUTLINK_RE.match(line)
             if o:
                 data.edge(current, o.group(1))
 

@@ -16,7 +16,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out",    type=Path, default=Path("output"),
                     help="Where to write the graph, metrics, plots and dataset.")
     ap.add_argument("--domain", default="sharif.ir",
-                    help="Registered domain to keep (e.g. sharif.ir, sharif.ir).")
+                    help="Registered domain to keep (e.g. sharif.ir, iran.ir).")
     args = ap.parse_args(argv)
 
     raw = parse.read_all(args.dump)

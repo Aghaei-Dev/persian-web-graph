@@ -24,18 +24,29 @@
 
   <property>
     <name>http.timeout</name>
-    <value>15000</value>
+    <value>20000</value>
+  </property>
+
+  <property>
+    <name>http.content.limit</name>
+    <value>1048576</value>
+    <description>1 MiB per page. Liferay pages can be large; the default 64KiB truncates them mid-template and drops outlinks.</description>
   </property>
 
   <property>
     <name>fetcher.threads.fetch</name>
-    <value>10</value>
+    <value>20</value>
+  </property>
+
+  <property>
+    <name>fetcher.threads.per.queue</name>
+    <value>2</value>
   </property>
 
   <property>
     <name>fetcher.server.delay</name>
-    <value>1.0</value>
-    <description>Politeness: 1 second between requests to the same host.</description>
+    <value>0.5</value>
+    <description>Politeness: 0.5 second between requests to the same host. Multiple seeds across subdomains let us fetch in parallel without hammering any one host.</description>
   </property>
 
   <property>
@@ -45,8 +56,8 @@
 
   <property>
     <name>db.max.outlinks.per.page</name>
-    <value>200</value>
-    <description>Cap outlinks per page; keeps the graph tractable.</description>
+    <value>400</value>
+    <description>Cap outlinks per page. 400 fits the Sharif homepage (200+ links) without truncating real navigation.</description>
   </property>
 
   <property>
@@ -58,10 +69,16 @@
   <property>
     <name>db.ignore.external.links.mode</name>
     <value>byDomain</value>
+    <description>byDomain so links across *.sharif.ir subdomains stay in-scope.</description>
   </property>
 
   <property>
     <name>db.injector.overwrite</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>db.update.additions.allowed</name>
     <value>true</value>
   </property>
 
@@ -81,6 +98,12 @@
   </property>
 
   <property>
+    <name>parser.skip.truncated</name>
+    <value>false</value>
+    <description>Don't drop a parse just because the content was truncated — keep its outlinks.</description>
+  </property>
+
+  <property>
     <name>link.ignore.internal.host</name>
     <value>false</value>
     <description>Keep within-host edges so the resulting graph is non-trivial.</description>
@@ -94,6 +117,28 @@
   <property>
     <name>link.ignore.limit.page</name>
     <value>false</value>
+  </property>
+
+  <property>
+    <name>link.ignore.limit.domain</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>generate.max.count</name>
+    <value>1000</value>
+    <description>At most 1000 URLs per host per generate round. Caps any one subdomain from monopolising the fetchlist.</description>
+  </property>
+
+  <property>
+    <name>generate.count.mode</name>
+    <value>host</value>
+  </property>
+
+  <property>
+    <name>db.fetch.interval.default</name>
+    <value>2592000</value>
+    <description>30 days. Default is 30 days too; making it explicit so refetch behaviour is predictable.</description>
   </property>
 
 </configuration>

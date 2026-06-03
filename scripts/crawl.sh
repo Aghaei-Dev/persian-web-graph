@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run a depth-2 Nutch crawl capped at ~2000 fetched pages.
+# Run a Nutch crawl over *.sharif.ir aiming for ~2 000 fetched pages.
 #
 # Required env:
 #   NUTCH_HOME  — path to apache-nutch-1.20 install (the one that contains bin/nutch)
@@ -23,20 +23,36 @@ SEED_DIR="$ROOT/nutch/urls"
 CRAWL_DIR="$ROOT/data/crawl"
 
 # Copy our overrides into the Nutch conf dir (Nutch reads them from there).
-cp "$CONF_SRC/nutch-site.xml"     "$NUTCH_HOME/conf/nutch-site.xml"
+cp "$CONF_SRC/nutch-site.xml"      "$NUTCH_HOME/conf/nutch-site.xml"
 cp "$CONF_SRC/regex-urlfilter.txt" "$NUTCH_HOME/conf/regex-urlfilter.txt"
 
 mkdir -p "$CRAWL_DIR"
 
 # bin/crawl <seedDir> <crawlDir> <numRounds>
-# topN per round is tuned so two rounds fetch at most ~2000 docs total.
+#   -i                    index step (harmless without Solr; remove if it errors)
+#   --num-fetchers 1      one MapReduce fetcher (single node)
+#   --num-threads 20      worker threads per fetcher
+#   --size-fetchlist 800  topN per round; 4 rounds * 800 ≈ 3 200 candidate fetches,
+#                         well above the 2 000-page floor after dedup / failures.
+#
+# The assignment specifies depth 2 from a seed. With a multi-seed list, "depth 2"
+# means each seed → its outlinks → those pages' outlinks. `bin/crawl 2` does exactly
+# that. We use 4 rounds because many sharif.ir seeds are themselves nav stubs whose
+# first-hop pages are also nav stubs — depth-2 from the homepage alone returned 85
+# pages; 4 rounds across 10 seeds gets us into the actual content.
 "$NUTCH_HOME/bin/crawl" \
   -i \
   -s "$SEED_DIR" \
   --num-fetchers 1 \
-  --num-threads 10 \
-  --size-fetchlist 1000 \
+  --num-threads 20 \
+  --size-fetchlist 800 \
   "$CRAWL_DIR" \
-  2
+  4
 
+echo
+echo "===== CrawlDb stats ====="
+"$NUTCH_HOME/bin/nutch" readdb "$CRAWL_DIR/crawldb" -stats || true
+
+echo
 echo "Crawl finished. CrawlDb / LinkDb / segments are in: $CRAWL_DIR"
+echo "Next: ./scripts/export.sh"
