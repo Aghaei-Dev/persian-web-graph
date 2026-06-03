@@ -121,6 +121,7 @@ at a time and observe.
 | `db.max.outlinks.per.page`          | `400`                   | Sharif's homepage exposes 200+ links. Default 100 chopped the navigation off. 400 leaves room without letting a sitemap-style page dominate.                                                                                                          |
 | `db.ignore.external.links`          | `true`                  | We only want internal edges. The assignment is explicit about this.                                                                                                                                                                                   |
 | `db.ignore.external.links.mode`     | `byDomain`              | Internal = same **registered domain**. So `www.sharif.ir → ce.sharif.ir` counts as internal. `byHost` would have treated those as external.                                                                                                           |
+| `db.ignore.internal.links`          | `false`                 | **LinkDb-side knob.** Default `true` drops same-host edges from LinkDb (the assumption is they're nav noise). We want them. If you see `LinkDb: internal links will be ignored.` in the crawl log, this is unset.                                     |
 | `db.injector.overwrite`             | `true`                  | Re-injecting the same seeds replaces their CrawlDb entry instead of compounding scores.                                                                                                                                                               |
 | `db.update.additions.allowed`       | `true`                  | Allows the CrawlDb update step to add newly discovered URLs. Default but explicit.                                                                                                                                                                    |
 | `plugin.includes`                   | (regex of plugin names) | Loads exactly the protocol/parser/indexer/scoring plugins we want. The relevant ones are `protocol-okhttp` (modern HTTP), `urlfilter-regex` (uses our regex file), `parse-html` + `parse-tika` (HTML/PDF/etc.), `urlnormalizer-*` (canonicalisation). |
@@ -487,6 +488,21 @@ Round budget ran out before those URLs got fetched. Bump `--size-fetchlist` or r
 `scripts/crawl.sh`. Or, if you only need 2 000 pages and have them, it's fine — those
 are just URLs the frontier discovered but never reached.
 
+### "Crawl dies after round 1 with `Indexing job did not succeed … FAILED`"
+
+`bin/crawl -i` runs a Solr indexing step at the end of each round, pushing to
+`http://localhost:8983/solr/nutch` by default. If no Solr is running, the index
+step fails with exit 255, and because `bin/crawl` is `set -e`, the whole crawl
+stops there. **Solution: drop the `-i` flag.** Our pipeline reads dumps directly
+and never needs Solr.
+
+### "LinkDb: internal links will be ignored."
+
+This shows up in the crawl log around the `invertlinks` step. The property we
+need is `db.ignore.internal.links=false` (not `link.ignore.internal.host`,
+which is for the separate `webgraph` job). Without it, same-host edges never
+make it into `linkdb`, and `parse.py`'s LinkDb reader returns no edges.
+
 ### "Crawl hangs"
 
 Probably a long `fetcher.server.delay` × too many same-host URLs. Drop the seed count for
@@ -567,10 +583,6 @@ export NUTCH_HOME=/opt/nutch
 export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-
-# make them executable
-chmod +x ./scripts/export.sh
-chmod +x ./scripts/crawl.sh
 
 # clean previous run if any
 rm -rf data/crawl data/dump output/dataset output/plots output/*.csv \

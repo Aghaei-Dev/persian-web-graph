@@ -29,7 +29,10 @@ cp "$CONF_SRC/regex-urlfilter.txt" "$NUTCH_HOME/conf/regex-urlfilter.txt"
 mkdir -p "$CRAWL_DIR"
 
 # bin/crawl <seedDir> <crawlDir> <numRounds>
-#   -i                    index step (harmless without Solr; remove if it errors)
+#   (no -i)               do NOT run the Solr indexing step. We don't have a Solr
+#                         instance, and bin/crawl is `set -e` — if the index step
+#                         fails with exit 255 it kills the whole crawl mid-run.
+#                         Our pipeline reads dumps directly, so indexing is unneeded.
 #   --num-fetchers 1      one MapReduce fetcher (single node)
 #   --num-threads 20      worker threads per fetcher
 #   --size-fetchlist 800  topN per round; 4 rounds * 800 ≈ 3 200 candidate fetches,
@@ -41,7 +44,6 @@ mkdir -p "$CRAWL_DIR"
 # first-hop pages are also nav stubs — depth-2 from the homepage alone returned 85
 # pages; 4 rounds across 10 seeds gets us into the actual content.
 "$NUTCH_HOME/bin/crawl" \
-  -i \
   -s "$SEED_DIR" \
   --num-fetchers 1 \
   --num-threads 20 \

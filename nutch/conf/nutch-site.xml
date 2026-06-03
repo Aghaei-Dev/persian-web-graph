@@ -73,6 +73,14 @@
   </property>
 
   <property>
+    <name>db.ignore.internal.links</name>
+    <value>false</value>
+    <description>LinkDb default is to DROP same-host links (assuming they're nav noise).
+    We want them — that's most of the graph. Without this the log prints
+    "LinkDb: internal links will be ignored." and linkdb.txt ends up empty.</description>
+  </property>
+
+  <property>
     <name>db.injector.overwrite</name>
     <value>true</value>
   </property>
