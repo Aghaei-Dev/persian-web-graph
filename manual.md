@@ -58,7 +58,7 @@ seed.txt ──► Nutch fetch + parse ──► CrawlDb / LinkDb / segments (bi
               metrics.txt + top_*.csv      plots/*.png                pages.jsonl + edges.csv
 ```
 
-The big lesson: Nutch *fetches and parses*, but it speaks SequenceFile. Everything we
+The big lesson: Nutch _fetches and parses_, but it speaks SequenceFile. Everything we
 actually care about lives in the **text dumps**, and the Python side reconstructs the
 graph from those. So a Nutch run that "succeeds" but writes the wrong dump shape will
 silently give us an empty graph — see §11 for how to spot that.
@@ -107,33 +107,33 @@ pip install -r requirements.txt
 Every property is here for a specific reason. If a future run misbehaves, change one knob
 at a time and observe.
 
-| Property | Value | Why |
-| --- | --- | --- |
-| `http.agent.name` | `UT-WebGraph-Crawler` | Nutch refuses to start without a user agent name. Also identifies us to the target's logs. |
-| `http.agent.description` / `email` | Academic + my email | Polite — lets the server admin reach me if my crawler causes problems. |
-| `http.robots.agents` | `UT-WebGraph-Crawler,*` | Tells Nutch's robots.txt parser which `User-Agent:` lines to match. Falls back to `*` if no specific block exists. |
-| `http.timeout` | `20000` (20 s) | Liferay (the CMS behind sharif.ir) can be slow on cold cache. Default 10 s caused a lot of `fetch_error`. |
-| `http.content.limit` | `1048576` (1 MiB) | **Critical.** Default is 64 KiB, which truncates a real Liferay page mid-`<head>` and drops most outlinks. Bumping this to 1 MiB was the single biggest fix when our first crawl produced an 86-node star. |
-| `fetcher.threads.fetch` | `20` | Number of concurrent fetcher threads. Politeness per host is enforced separately, so this just lets us pull from many hosts in parallel. |
-| `fetcher.threads.per.queue` | `2` | At most 2 in-flight requests per host. With 10 seeds across subdomains this gives real parallelism. |
-| `fetcher.server.delay` | `0.5` (s) | Sleep between hits to the same host. 1.0 s is the typical polite default; we went to 0.5 s because we have a tight time budget and 10 hosts in the seed list spread the load. |
-| `fetcher.max.crawl.delay` | `10` (s) | If `robots.txt` requests >10 s delay, skip that host instead of waiting forever. |
-| `db.max.outlinks.per.page` | `400` | Sharif's homepage exposes 200+ links. Default 100 chopped the navigation off. 400 leaves room without letting a sitemap-style page dominate. |
-| `db.ignore.external.links` | `true` | We only want internal edges. The assignment is explicit about this. |
-| `db.ignore.external.links.mode` | `byDomain` | Internal = same **registered domain**. So `www.sharif.ir → ce.sharif.ir` counts as internal. `byHost` would have treated those as external. |
-| `db.injector.overwrite` | `true` | Re-injecting the same seeds replaces their CrawlDb entry instead of compounding scores. |
-| `db.update.additions.allowed` | `true` | Allows the CrawlDb update step to add newly discovered URLs. Default but explicit. |
-| `plugin.includes` | (regex of plugin names) | Loads exactly the protocol/parser/indexer/scoring plugins we want. The relevant ones are `protocol-okhttp` (modern HTTP), `urlfilter-regex` (uses our regex file), `parse-html` + `parse-tika` (HTML/PDF/etc.), `urlnormalizer-*` (canonicalisation). |
-| `parser.character.encoding.default` | `utf-8` | Persian is UTF-8. Default ISO-8859-1 would mangle the titles. |
-| `parser.html.outlinks.ignore_tags` | `img,script,style,link` | Don't treat `<img src>`, `<script src>`, `<link href>` as outlinks. We only want `<a href>`. |
-| `parser.skip.truncated` | `false` | If `http.content.limit` truncates a fetched page, keep the parse anyway and use whatever outlinks we did manage to extract. Default true would drop the whole record. |
-| `link.ignore.internal.host` | `false` | LinkDb / WebGraph default is to drop **same-host** links (assuming they're nav noise). We want them — that's most of the graph. |
-| `link.ignore.internal.domain` | `false` | Same idea, one scope wider. |
-| `link.ignore.limit.page` | `false` | Allow multiple distinct edges between the same two pages. |
-| `link.ignore.limit.domain` | `false` | Same idea across domain pairs. |
-| `generate.max.count` | `1000` | Per `generate.count.mode`, cap any one host at 1000 URLs per generate round. Stops one big subdomain from monopolising the fetchlist. |
-| `generate.count.mode` | `host` | Count toward the cap above by host. |
-| `db.fetch.interval.default` | `2592000` (30 days) | How long until Nutch wants to refetch a URL. Doesn't matter for a one-shot crawl, but explicit > implicit. |
+| Property                            | Value                   | Why                                                                                                                                                                                                                                                   |
+| ----------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `http.agent.name`                   | `UT-WebGraph-Crawler`   | Nutch refuses to start without a user agent name. Also identifies us to the target's logs.                                                                                                                                                            |
+| `http.agent.description` / `email`  | Academic + my email     | Polite — lets the server admin reach me if my crawler causes problems.                                                                                                                                                                                |
+| `http.robots.agents`                | `UT-WebGraph-Crawler,*` | Tells Nutch's robots.txt parser which `User-Agent:` lines to match. Falls back to `*` if no specific block exists.                                                                                                                                    |
+| `http.timeout`                      | `20000` (20 s)          | Liferay (the CMS behind sharif.ir) can be slow on cold cache. Default 10 s caused a lot of `fetch_error`.                                                                                                                                             |
+| `http.content.limit`                | `1048576` (1 MiB)       | **Critical.** Default is 64 KiB, which truncates a real Liferay page mid-`<head>` and drops most outlinks. Bumping this to 1 MiB was the single biggest fix when our first crawl produced an 86-node star.                                            |
+| `fetcher.threads.fetch`             | `20`                    | Number of concurrent fetcher threads. Politeness per host is enforced separately, so this just lets us pull from many hosts in parallel.                                                                                                              |
+| `fetcher.threads.per.queue`         | `2`                     | At most 2 in-flight requests per host. With 10 seeds across subdomains this gives real parallelism.                                                                                                                                                   |
+| `fetcher.server.delay`              | `0.5` (s)               | Sleep between hits to the same host. 1.0 s is the typical polite default; we went to 0.5 s because we have a tight time budget and 10 hosts in the seed list spread the load.                                                                         |
+| `fetcher.max.crawl.delay`           | `10` (s)                | If `robots.txt` requests >10 s delay, skip that host instead of waiting forever.                                                                                                                                                                      |
+| `db.max.outlinks.per.page`          | `400`                   | Sharif's homepage exposes 200+ links. Default 100 chopped the navigation off. 400 leaves room without letting a sitemap-style page dominate.                                                                                                          |
+| `db.ignore.external.links`          | `true`                  | We only want internal edges. The assignment is explicit about this.                                                                                                                                                                                   |
+| `db.ignore.external.links.mode`     | `byDomain`              | Internal = same **registered domain**. So `www.sharif.ir → ce.sharif.ir` counts as internal. `byHost` would have treated those as external.                                                                                                           |
+| `db.injector.overwrite`             | `true`                  | Re-injecting the same seeds replaces their CrawlDb entry instead of compounding scores.                                                                                                                                                               |
+| `db.update.additions.allowed`       | `true`                  | Allows the CrawlDb update step to add newly discovered URLs. Default but explicit.                                                                                                                                                                    |
+| `plugin.includes`                   | (regex of plugin names) | Loads exactly the protocol/parser/indexer/scoring plugins we want. The relevant ones are `protocol-okhttp` (modern HTTP), `urlfilter-regex` (uses our regex file), `parse-html` + `parse-tika` (HTML/PDF/etc.), `urlnormalizer-*` (canonicalisation). |
+| `parser.character.encoding.default` | `utf-8`                 | Persian is UTF-8. Default ISO-8859-1 would mangle the titles.                                                                                                                                                                                         |
+| `parser.html.outlinks.ignore_tags`  | `img,script,style,link` | Don't treat `<img src>`, `<script src>`, `<link href>` as outlinks. We only want `<a href>`.                                                                                                                                                          |
+| `parser.skip.truncated`             | `false`                 | If `http.content.limit` truncates a fetched page, keep the parse anyway and use whatever outlinks we did manage to extract. Default true would drop the whole record.                                                                                 |
+| `link.ignore.internal.host`         | `false`                 | LinkDb / WebGraph default is to drop **same-host** links (assuming they're nav noise). We want them — that's most of the graph.                                                                                                                       |
+| `link.ignore.internal.domain`       | `false`                 | Same idea, one scope wider.                                                                                                                                                                                                                           |
+| `link.ignore.limit.page`            | `false`                 | Allow multiple distinct edges between the same two pages.                                                                                                                                                                                             |
+| `link.ignore.limit.domain`          | `false`                 | Same idea across domain pairs.                                                                                                                                                                                                                        |
+| `generate.max.count`                | `1000`                  | Per `generate.count.mode`, cap any one host at 1000 URLs per generate round. Stops one big subdomain from monopolising the fetchlist.                                                                                                                 |
+| `generate.count.mode`               | `host`                  | Count toward the cap above by host.                                                                                                                                                                                                                   |
+| `db.fetch.interval.default`         | `2592000` (30 days)     | How long until Nutch wants to refetch a URL. Doesn't matter for a one-shot crawl, but explicit > implicit.                                                                                                                                            |
 
 ---
 
@@ -191,7 +191,7 @@ https://eri.sharif.ir/
 
 Ten subdomains, not one. The first crawl used only `https://www.sharif.ir/` and produced
 an 86-node star because the homepage links almost entirely to subdomain home pages, and
-those subdomains' home pages are *also* nav stubs. Starting from ten content-rich
+those subdomains' home pages are _also_ nav stubs. Starting from ten content-rich
 subdomains gets us into actual content within depth 2.
 
 Probed these with `curl -I` before adding — they all return HTTP 200. (Aero was 000 / not
@@ -253,13 +253,13 @@ If `db_fetched` is under 1 000, something is wrong. Most likely culprits in §11
 
 This runs four Nutch jobs and writes plain text under `data/dump/`:
 
-| Job | Output | What it contains |
-| --- | --- | --- |
-| `bin/nutch readdb $CRAWL_DIR/crawldb -dump` | `data/dump/crawldb.txt` | One record per known URL: status (fetched/gone/unfetched), fetch score, signature, metadata (incl. title for fetched URLs). |
-| `bin/nutch readlinkdb $CRAWL_DIR/linkdb -dump` | `data/dump/linkdb.txt` | For each URL, the list of inbound URLs and the anchor text from them. |
-| `bin/nutch webgraph -segmentDir $SEG_DIR -webgraphdb $WG_DIR` | `data/dump/webgraph/{nodes,outlinks,inlinks}/` | Nutch's canonical link structure as SequenceFiles. |
-| `bin/nutch nodedumper -{outlinks,inlinks,scores} -webgraphdb $WG_DIR -output …` | `data/dump/webgraph/{outlinks,inlinks,scores}_txt/` | Text dump of the above. |
-| `bin/nutch readseg -dump <seg> <out> -nocontent -noparsetext` | `data/dump/segments_text/<seg>/dump` | Per-page metadata from the parse step: URL, title, list of outlinks. |
+| Job                                                                             | Output                                              | What it contains                                                                                                            |
+| ------------------------------------------------------------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `bin/nutch readdb $CRAWL_DIR/crawldb -dump`                                     | `data/dump/crawldb.txt`                             | One record per known URL: status (fetched/gone/unfetched), fetch score, signature, metadata (incl. title for fetched URLs). |
+| `bin/nutch readlinkdb $CRAWL_DIR/linkdb -dump`                                  | `data/dump/linkdb.txt`                              | For each URL, the list of inbound URLs and the anchor text from them.                                                       |
+| `bin/nutch webgraph -segmentDir $SEG_DIR -webgraphdb $WG_DIR`                   | `data/dump/webgraph/{nodes,outlinks,inlinks}/`      | Nutch's canonical link structure as SequenceFiles.                                                                          |
+| `bin/nutch nodedumper -{outlinks,inlinks,scores} -webgraphdb $WG_DIR -output …` | `data/dump/webgraph/{outlinks,inlinks,scores}_txt/` | Text dump of the above.                                                                                                     |
+| `bin/nutch readseg -dump <seg> <out> -nocontent -noparsetext`                   | `data/dump/segments_text/<seg>/dump`                | Per-page metadata from the parse step: URL, title, list of outlinks.                                                        |
 
 The Python pipeline reads **all four** and merges. If one of them is missing or in a
 slightly different format (Nutch's text dumps shift between point releases), the parser
@@ -286,12 +286,13 @@ python -m src.cli --dump data/dump --out output --domain sharif.ir
 ```
 
 CLI flags:
-- `--dump`   path to the dump directory (default `data/dump`)
-- `--out`    output directory (default `output`)
+
+- `--dump` path to the dump directory (default `data/dump`)
+- `--out` output directory (default `output`)
 - `--domain` registered domain to restrict to (default `sharif.ir`)
 
 The `--domain` flag isn't the same as the URL filter. URL filter restricts what Nutch
-*crawls*; `--domain` restricts what the **graph keeps**. If the dump accidentally contains
+_crawls_; `--domain` restricts what the **graph keeps**. If the dump accidentally contains
 URLs from outside `sharif.ir` (e.g. a redirect target Nutch followed), this drops them.
 
 ### What each module does
@@ -369,6 +370,7 @@ headless over SSH.
   the 500 highest-degree ones for legibility.
 
 **`src/dataset.py`** — writes the two deliverable files:
+
 - `pages.jsonl` — one JSON record per page, `{url, title, outlinks: [...]}`. The
   "crawl dataset of ≥2 000 pages and their links" the brief asks for.
 - `edges.csv` — flat `src,dst` edge list.
@@ -408,6 +410,7 @@ output/
 I've hit all of these. Documenting them so I don't have to re-debug.
 
 ### "The crawl finished but my graph is a star"
+
 Symptom: `metrics.txt` shows ~85 nodes, all edges from one source.
 
 What happened the first time: depth-2 from `www.sharif.ir/` alone. Round 1 fetched the
@@ -417,6 +420,7 @@ subdomain home pages, most of which are also nav stubs, so we got no further con
 extracted.
 
 Fix applied (already in `nutch-site.xml`):
+
 - `http.content.limit=1048576` so the page isn't truncated.
 - `db.max.outlinks.per.page=400` so we don't cap the navigation.
 - `parser.skip.truncated=false` defensively.
@@ -424,6 +428,7 @@ Fix applied (already in `nutch-site.xml`):
 - 4 rounds instead of 2.
 
 ### "Zero fetched pages"
+
 URL filter doesn't match the seed, or `robots.txt` blocks. Check:
 
 ```bash
@@ -435,44 +440,55 @@ curl -I https://www.sharif.ir/
 Don't bypass robots — change targets if a site bans crawlers.
 
 ### "Crawl runs but `data/dump/webgraph/outlinks_txt/` is empty"
+
 The `webgraph` job needs at least one parsed segment. If round 1 failed to parse (e.g.
 all pages returned binary or were truncated to nothing), there's nothing for the WebGraph
 job to chew on.
 
 Inspect:
+
 ```bash
 ls data/crawl/segments/                          # are there segment dirs at all?
 $NUTCH_HOME/bin/nutch readseg -list data/crawl/segments/*/    # how many parsed records?
 ```
 
 ### "Pipeline prints '0 nodes after restricting to sharif.ir'"
+
 Either you passed `--domain iran.ir` while crawling sharif.ir (or vice versa), or the
 URL canonicaliser is choking. Spot-check:
+
 ```bash
 head -20 data/dump/linkdb.txt
 ```
+
 URLs should be on lines by themselves with a clear `https://…sharif.ir/…` shape.
 
 ### "Diameter is None"
+
 The largest WCC is a single node. Almost always means the parser found pages but no
 edges. Check the dumps as in the previous item, and check that `link.ignore.*=false`
 in `nutch-site.xml`.
 
 ### "Titles are all empty in pages.jsonl"
+
 The `readseg` part of `export.sh` either didn't run or wrote a different format. Check:
+
 ```bash
 find data/dump/segments_text -name dump -exec head -100 {} \; | grep -i title
 ```
+
 If you see `Title: …` lines, the parser regex should pick them up. If you see
 `<title>…</title>` raw HTML, then `-noparsetext` was missing on `readseg` and we got the
 wrong dump.
 
 ### "`bin/nutch readdb -stats` shows lots of `db_unfetched`"
+
 Round budget ran out before those URLs got fetched. Bump `--size-fetchlist` or rounds in
 `scripts/crawl.sh`. Or, if you only need 2 000 pages and have them, it's fine — those
 are just URLs the frontier discovered but never reached.
 
 ### "Crawl hangs"
+
 Probably a long `fetcher.server.delay` × too many same-host URLs. Drop the seed count for
 that host or raise `fetcher.threads.per.queue`. Last resort: kill it and look at
 `logs/hadoop.log` inside `$NUTCH_HOME` for what was actually blocking.
@@ -483,14 +499,14 @@ that host or raise `fetcher.threads.per.queue`. Last resort: kill it and look at
 
 The placeholders in `report.md` map 1:1 to artefacts:
 
-| Placeholder in `report.md` | Where to read it from |
-| --- | --- |
-| `<<nodes>>` through `<<avg_path>>` in the metrics block | Paste the whole contents of `output/metrics.txt` |
-| `<<>>` rows under "By raw in-degree" | `output/top_in_degree.csv` — columns `in_degree` and `url` |
-| `<<>>` rows under "By PageRank" | `output/top_pagerank.csv` — columns `pagerank` and `url` |
-| `<<>>` rows under "HITS authorities / hubs" | `output/top_authorities.csv` and `output/top_hubs.csv` — first 5 rows of each |
-| Degree-distribution charts | already embedded as `output/plots/in_degree*.png`, `out_degree*.png` |
-| Largest-WCC figure | already embedded as `output/plots/largest_wcc.png` |
+| Placeholder in `report.md`                              | Where to read it from                                                         |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `<<nodes>>` through `<<avg_path>>` in the metrics block | Paste the whole contents of `output/metrics.txt`                              |
+| `<<>>` rows under "By raw in-degree"                    | `output/top_in_degree.csv` — columns `in_degree` and `url`                    |
+| `<<>>` rows under "By PageRank"                         | `output/top_pagerank.csv` — columns `pagerank` and `url`                      |
+| `<<>>` rows under "HITS authorities / hubs"             | `output/top_authorities.csv` and `output/top_hubs.csv` — first 5 rows of each |
+| Degree-distribution charts                              | already embedded as `output/plots/in_degree*.png`, `out_degree*.png`          |
+| Largest-WCC figure                                      | already embedded as `output/plots/largest_wcc.png`                            |
 
 Quick way to view top-K files in the terminal:
 
@@ -552,6 +568,10 @@ export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
+# make them executable
+chmod +x ./scripts/export.sh
+chmod +x ./scripts/crawl.sh
+
 # clean previous run if any
 rm -rf data/crawl data/dump output/dataset output/plots output/*.csv \
        output/*.gexf output/*.graphml output/metrics.txt
@@ -563,6 +583,7 @@ python -m src.cli --dump data/dump --out output --domain sharif.ir
 ```
 
 Then:
+
 - open `output/metrics.txt` → paste into the report's "Numbers from this run" block.
 - open the `output/top_*.csv` → fill in the report's tables.
 - the plot PNGs are already referenced by `report.md`.
