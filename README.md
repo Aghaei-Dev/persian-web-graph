@@ -158,7 +158,31 @@ Two implementation choices worth justifying:
   fixed seed (`random.Random(42)`), BFS from each on the undirected view, and report the
   maximum depth as a (slightly conservative) diameter estimate.
 
-## Numbers from this run
+## Output and Results
+
+```text
+output/
+├── webgraph.graphml          # full directed graph
+├── webgraph.gexf             # same graph in GEXF (Gephi loves this)
+├── metrics.txt               # nodes, edges, degree, clustering, WCC, diameter
+├── top_in_degree.csv         # top-10 pages by raw in-degree (table for the report)
+├── top_out_degree.csv        # top-10 by out-degree (not strictly asked for, useful)
+├── top_pagerank.csv          # top-10 by PageRank — comparison target
+├── top_authorities.csv       # top-10 HITS authorities — bonus
+├── top_hubs.csv              # top-10 HITS hubs — bonus
+├── pagerank_all.csv          # PageRank for every node, descending. For tail analysis.
+├── dataset/
+│   ├── pages.jsonl           # the "≥2 000 pages and their links" dataset
+│   └── edges.csv             # flat edge list
+└── plots/
+    ├── in_degree.png         # log-log scatter
+    ├── in_degree_logbin.png  # Newman-style log-binned PDF
+    ├── out_degree.png        # log-log scatter
+    ├── out_degree_logbin.png # log-binned PDF
+    └── largest_wcc.png       # spring-layout drawing of the giant component
+```
+
+### Numbers from this run
 
 ```text
 Nodes:                7915
@@ -173,7 +197,7 @@ Diameter (sampled):   10
 Avg shortest path:    4.7396
 ```
 
-## Degree distributions
+### Degree distributions
 
 The log-log scatter shows raw P(k) at each observed degree value; the log-binned plot
 shows the same distribution after grouping degree values into geometric bins and
@@ -194,7 +218,7 @@ narrower and falls off more sharply, because most page templates link to roughly
 same number of navigation targets. If the in-degree slope on the log-binned plot is
 in the −2.0 to −2.5 range, this slice of the web is behaving like everyone else's.
 
-## A look at the giant component
+### A look at the giant component
 
 ![Largest WCC, top-degree subgraph, ForceAtlas-ish layout](output/plots/largest_wcc.png)
 
@@ -204,9 +228,9 @@ are drawn at low alpha so the backbone is visible. The dense knot in the middle 
 navigation core — home page, faculty index, news index. The wisps around it are
 section subtrees that link inward heavily but rarely link out.
 
-## Important pages
+### Important pages
 
-### By raw in-degree
+#### By raw in-degree
 
 | Rank | In-degree | URL                                     |
 | ---- | --------- | --------------------------------------- |
@@ -221,7 +245,7 @@ section subtrees that link inward heavily but rarely link out.
 | 9    | 267       | `https://en.sharif.ir/en/admission`     |
 | 10   | 267       | `https://en.sharif.ir/en/facts-figures` |
 
-### By PageRank (d = 0.85, 20 iterations)
+#### By PageRank (d = 0.85, 20 iterations)
 
 | Rank | PageRank   | URL                                                                                                                |
 | ---- | ---------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -236,7 +260,7 @@ section subtrees that link inward heavily but rarely link out.
 | 9    | 0.00269049 | `https://news.sharif.ir/fa/`                                                                                       |
 | 10   | 0.00229735 | `http://en.sharif.ir/`                                                                                             |
 
-### HITS authorities / hubs
+#### HITS authorities / hubs
 
 | Authorities | Hubs       |
 | ----------- | ---------- |
@@ -251,7 +275,7 @@ authority and PageRank lists tend to overlap on the navigation hubs; the hubs li
 picks out pages whose value is "this links to all the good stuff" — sitemaps, search
 result pages, category indices.)
 
-### Comparison
+#### Comparison
 
 In-degree and PageRank both answer "which page is central?", but they weight evidence
 differently. In-degree treats every inbound link as worth one vote; PageRank weights
