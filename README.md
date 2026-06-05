@@ -1,5 +1,31 @@
 # Structural analysis of a Persian web subgraph
 
+## First things first
+
+**"Reason for Switching from `ut.ac.ir` to `sharif.ir`"** Arvan Cloud was blocking our
+crawler from `ut.ac.ir` and `iran.ir`. Sharif is on a different CDN and responds normally.
+The methodology is identical; only the seed changed.
+
+**Reason for having 10 seed URL in `nutch/urls/seed.txt`**
+
+```text
+https://www.sharif.ir/
+https://daily.sharif.ir/
+https://news.sharif.ir/
+https://en.sharif.ir/
+https://farhangi.sharif.ir/
+https://ch.sharif.ir/
+https://journal.sharif.ir/
+https://shafaf.sharif.ir/
+https://language.sharif.ir/
+https://eri.sharif.ir/
+```
+
+Ten subdomains, not one. The first crawl used only `https://www.sharif.ir/` and produced
+an 86-node star because the homepage links almost entirely to subdomain home pages, and
+those subdomains' home pages are _also_ nav stubs. Starting from ten content-rich
+subdomains gets us into actual content within depth 2.
+
 ## What needs to be installed and How to run the Project?
 
 - **Java 11 or 17.** Nutch 1.22 runs on either. Check with `java -version`.
@@ -54,20 +80,40 @@ after that a fresh run with
 python -m src.cli --dump data/dump --out output --domain sharif.ir
 ```
 
-## Why bother
+## Data Flows
 
-Treat the web as a directed graph: pages are vertices, hyperlinks are edges. Three things
-are reliably true about that graph at scale and have been since Broder et al. (2000): the
-in-degree distribution is heavy-tailed, the local clustering coefficient sits well above
-what you'd get from random rewiring, and the effective diameter is tiny — usually
-_O_(log N). The interesting question for a course assignment is whether a small,
-self-contained Persian sub-web (one university domain, ~2 000 pages) already shows the
-same fingerprint, or whether you need to crawl the whole _.ir_ TLD before the stylised
-facts emerge.
+```text
+seed.txt ──► Nutch fetch + parse ──► CrawlDb / LinkDb / segments (binary SequenceFiles)
+                                                  │
+                              readdb / readlinkdb / webgraph + nodedumper / readseg
+                                                  │
+                                                  ▼
+                                  data/dump/*.txt  (plain text)
+                                                  │
+                                          src/parse.py
+                                                  │
+                                                  ▼
+                                  CrawlData = {pages, edges}
+                                                  │
+                                          src/graph.py
+                                                  │
+                                                  ▼
+                                   networkx.DiGraph  ──► webgraph.graphml + .gexf
+                                                  │
+                          ┌───────────────────────┼──────────────────────────┐
+                          ▼                       ▼                          ▼
+                   src/analysis.py         src/plots.py              src/dataset.py
+                          │                       │                          │
+                          ▼                       ▼                          ▼
+              metrics.txt + top_*.csv      plots/*.png                pages.jsonl + edges.csv
+```
 
-So we run a polite, depth-2 crawl of `sharif.ir`, restrict to internal hyperlinks, and
-compute the standard battery: degree distributions, clustering coefficient, weakly
-connected components, diameter, PageRank, and HITS. Nothing exotic.
+The big lesson: Nutch _fetches and parses_, but it speaks SequenceFile. Everything we
+actually care about lives in the **text dumps**, and the Python side reconstructs the
+graph from those. So a Nutch run that "succeeds" but writes the wrong dump shape will
+silently give us an empty graph — see §11 for how to spot that.
+
+---
 
 ## How the data was collected
 
