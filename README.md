@@ -61,19 +61,17 @@ Two implementation choices worth justifying:
 ## Numbers from this run
 
 ```text
-Nodes:                <<nodes>>
-Edges:                <<edges>>
-Avg in-degree:        <<avg_in>>
-Avg out-degree:       <<avg_out>>
-Avg clustering coef:  <<C>>
-WCC count:            <<wcc_count>>
-WCC sizes (top 5):    <<wcc_top5>>
-Largest WCC:          <<largest_wcc>>
-Diameter (sampled):   <<diameter>>
-Avg shortest path:    <<avg_path>>
+Nodes:                7915
+Edges:                66786
+Avg in-degree:        8.4379
+Avg out-degree:       8.4379
+Avg clustering coef:  0.2749
+WCC count:            108
+WCC sizes (top 5):    [7808, 1, 1, 1, 1]
+Largest WCC:          7808
+Diameter (sampled):   10
+Avg shortest path:    4.7396
 ```
-
-(Pasted verbatim from `output/metrics.txt`.)
 
 ## Degree distributions
 
@@ -110,43 +108,43 @@ section subtrees that link inward heavily but rarely link out.
 
 ### By raw in-degree
 
-| Rank | In-degree | URL    |
-| ---- | --------- | ------ |
-| 1    | `<<>>`    | `<<>>` |
-| 2    | `<<>>`    | `<<>>` |
-| 3    | `<<>>`    | `<<>>` |
-| 4    | `<<>>`    | `<<>>` |
-| 5    | `<<>>`    | `<<>>` |
-| 6    | `<<>>`    | `<<>>` |
-| 7    | `<<>>`    | `<<>>` |
-| 8    | `<<>>`    | `<<>>` |
-| 9    | `<<>>`    | `<<>>` |
-| 10   | `<<>>`    | `<<>>` |
+| Rank | In-degree | URL                                     |
+| ---- | --------- | --------------------------------------- |
+| 1    | 878       | `http://www.sharif.ir/`                 |
+| 2    | 490       | `http://library.sharif.ir/home`         |
+| 3    | 400       | `https://www.sharif.ir/disclaimer`      |
+| 4    | 304       | `http://en.sharif.ir/`                  |
+| 5    | 267       | `https://en.sharif.ir/en/research`      |
+| 6    | 267       | `https://en.sharif.ir/en/departments`   |
+| 7    | 267       | `https://en.sharif.ir/en/international` |
+| 8    | 267       | `https://en.sharif.ir/en/courses`       |
+| 9    | 267       | `https://en.sharif.ir/en/admission`     |
+| 10   | 267       | `https://en.sharif.ir/en/facts-figures` |
 
 ### By PageRank (d = 0.85, 20 iterations)
 
-| Rank | PageRank | URL    |
-| ---- | -------- | ------ |
-| 1    | `<<>>`   | `<<>>` |
-| 2    | `<<>>`   | `<<>>` |
-| 3    | `<<>>`   | `<<>>` |
-| 4    | `<<>>`   | `<<>>` |
-| 5    | `<<>>`   | `<<>>` |
-| 6    | `<<>>`   | `<<>>` |
-| 7    | `<<>>`   | `<<>>` |
-| 8    | `<<>>`   | `<<>>` |
-| 9    | `<<>>`   | `<<>>` |
-| 10   | `<<>>`   | `<<>>` |
+| Rank | PageRank   | URL                                                                                                                |
+| ---- | ---------- | ------------------------------------------------------------------------------------------------------------------ |
+| 1    | 0.00782558 | `https://www.sharif.ir/disclaimer`                                                                                 |
+| 2    | 0.00586254 | `http://www.sharif.ir/`                                                                                            |
+| 3    | 0.00421165 | `https://news.sharif.ir/fa/`                                                                                       |
+| 4    | 0.00415462 | `https://news.sharif.ir/fa/%D9%81%D8%B1%D9%87%D9%86%DA%AF%DB%8C-%D9%88-%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%DB%8C` |
+| 5    | 0.00415462 | `https://news.sharif.ir/fa/%D8%A7%D8%AF%D8%A7%D8%B1%DB%8C-%D9%88-%D8%B3%D8%A7%D8%B2%D9%85%D8%A7%D9%86%DB%8C`       |
+| 6    | 0.00408095 | `https://news.sharif.ir/fa/%D8%A2%D9%85%D9%88%D8%B2%D8%B4%DB%8C`                                                   |
+| 7    | 0.00408095 | `https://news.sharif.ir/fa/%D8%AF%D8%A7%D9%86%D8%B4%D8%AC%D9%88%DB%8C%DB%8C`                                       |
+| 8    | 0.00398589 | `http://library.sharif.ir/home`                                                                                    |
+| 9    | 0.00269049 | `https://news.sharif.ir/fa/`                                                                                       |
+| 10   | 0.00229735 | `http://en.sharif.ir/`                                                                                             |
 
 ### HITS authorities / hubs
 
-| Authorities | Hubs   |
-| ----------- | ------ |
-| `<<>>`      | `<<>>` |
-| `<<>>`      | `<<>>` |
-| `<<>>`      | `<<>>` |
-| `<<>>`      | `<<>>` |
-| `<<>>`      | `<<>>` |
+| Authorities | Hubs       |
+| ----------- | ---------- |
+| 0.15197320  | 0.09791327 |
+| 0.13223128  | 0.09791327 |
+| 0.12497903  | 0.09791327 |
+| 0.12497903  | 0.09791327 |
+| 0.12497903  | 0.09789863 |
 
 (Top-5 of each, from `output/top_authorities.csv` and `output/top_hubs.csv`. The
 authority and PageRank lists tend to overlap on the navigation hubs; the hubs list
