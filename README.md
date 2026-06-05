@@ -1,5 +1,59 @@
 # Structural analysis of a Persian web subgraph
 
+## What needs to be installed and How to run the Project?
+
+- **Java 11 or 17.** Nutch 1.22 runs on either. Check with `java -version`.
+- **Python 3.10+.** Only stdlib + `networkx` + `matplotlib`. The `requirements.txt`
+  pins them.
+- **~1 GB free disk** for crawl artefacts (mostly the segments).
+
+Get Nutch 1.22 and dump it under `/opt/nutch`:
+
+```bash
+cd /opt
+wget https://dlcdn.apache.org/nutch/1.22/apache-nutch-1.22-bin.tar.gz
+tar xzf apache-nutch-1.22-bin.tar.gz
+mv apache-nutch-1.22 nutch
+```
+
+Then point shells at it. `~/.bashrc` and `~/.zshrc` both:
+
+```bash
+export NUTCH_HOME=/opt/nutch
+export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+```
+
+and also copy them in zshrc
+
+```bash
+nano ~/.zshrc
+```
+
+Python environment:
+
+```bash
+cd /root/aiq-v2/persian-web-graph
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+if its not your first time running this project you msut delete all previous data by:
+
+```bash
+# clean previous run if any
+rm -rf data/crawl data/dump output/dataset output/plots output/*.csv \
+       output/*.gexf output/*.graphml output/metrics.txt
+```
+
+after that a fresh run with
+
+```bash
+./scripts/crawl.sh                                       # ~30–60 min
+./scripts/export.sh                                      # ~1–3 min
+python -m src.cli --dump data/dump --out output --domain sharif.ir
+```
+
 ## Why bother
 
 Treat the web as a directed graph: pages are vertices, hyperlinks are edges. Three things
@@ -182,20 +236,6 @@ content. The numbers reported here describe the top of the iceberg, not the whol
 A secondary issue is that despite URL canonicalisation, some pages will appear as
 duplicate URLs (different trailing slashes, locale prefixes, query-string variants). The
 graph counts them as separate nodes, which inflates the node count slightly.
-
-## Reproducing this
-
-```bash
-export NUTCH_HOME=/opt/nutch
-./scripts/crawl.sh                                       # ~30–60 min
-./scripts/export.sh                                      # ~1-3 min
-python -m src.cli --dump data/dump --out output --domain sharif.ir
-```
-
-Determinism: PageRank's iteration count is fixed; HITS is fixed; the diameter sampler
-uses `random.Random(42)`; `nx.spring_layout` for the WCC snapshot uses `seed=42`. Given
-the same crawl dump, the pipeline produces byte-identical metrics, top-K tables and
-plots.
 
 ## References
 
