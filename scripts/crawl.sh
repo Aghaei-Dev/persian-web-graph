@@ -2,7 +2,7 @@
 # Run a Nutch crawl over *.sharif.ir aiming for ~2 000 fetched pages.
 #
 # Required env:
-#   NUTCH_HOME  — path to apache-nutch-1.20 install (the one that contains bin/nutch)
+#   NUTCH_HOME  — path to apache-nutch-1.22 install (the one that contains bin/nutch)
 #
 # Layout expected (relative to this script):
 #   ../nutch/conf/nutch-site.xml
@@ -16,7 +16,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 
-: "${NUTCH_HOME:?Set NUTCH_HOME to your apache-nutch-1.20 directory}"
+: "${NUTCH_HOME:?Set NUTCH_HOME to your apache-nutch-1.22 directory}"
 
 CONF_SRC="$ROOT/nutch/conf"
 SEED_DIR="$ROOT/nutch/urls"

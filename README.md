@@ -1,12 +1,5 @@
 # Structural analysis of a Persian web subgraph
 
-> Course: Information Retrieval / Web Mining — Spring 2026
-> Seed: `sharif.ir` (swap in `iran.ir` if you ran the alternative crawl)
-> Crawl depth: 2 · Page budget: 2 000
->
-> Numbers below in `<<…>>` come straight out of `output/metrics.txt`,
-> `output/top_*.csv`, and `output/plots/`. Fill them in after the pipeline run.
-
 ## Why bother
 
 Treat the web as a directed graph: pages are vertices, hyperlinks are edges. Three things
@@ -24,7 +17,7 @@ connected components, diameter, PageRank, and HITS. Nothing exotic.
 
 ## How the data was collected
 
-Crawler: Apache Nutch 1.20 with `bin/crawl` over four rounds, an 800-URL fetch list per
+Crawler: Apache Nutch 1.22 with `bin/crawl` over four rounds, an 800-URL fetch list per
 round, and `db.ignore.external.links = true` (mode `byDomain`). Politeness is
 `fetcher.server.delay = 0.5` — half a second between hits to the same host. Per-page
 outlink budget is capped at 400 (`db.max.outlinks.per.page`) so a single sitemap-style
@@ -224,4 +217,4 @@ Newman (2005). _Power laws, Pareto distributions and Zipf's law._ Contemporary P
 Hagberg, Schult & Swart (2008). _Exploring network structure, dynamics, and function
 using NetworkX._ SciPy proceedings.
 
-Apache Nutch 1.20 — https://nutch.apache.org/
+Apache Nutch 1.22 — https://nutch.apache.org/

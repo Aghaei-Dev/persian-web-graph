@@ -11,7 +11,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 
-: "${NUTCH_HOME:?Set NUTCH_HOME to your apache-nutch-1.20 directory}"
+: "${NUTCH_HOME:?Set NUTCH_HOME to your apache-nutch-1.22 directory}"
 
 CRAWL_DIR="$ROOT/data/crawl"
 DUMP_DIR="$ROOT/data/dump"
