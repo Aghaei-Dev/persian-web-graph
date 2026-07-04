@@ -8,3 +8,5 @@ WCC sizes (top 5):    [7808, 1, 1, 1, 1]
 Largest WCC:          7808
 Diameter (sampled):   10
 Avg shortest path:    4.7396
+In-degree slope:      -2.1113
+Out-degree slope:     -0.9717
