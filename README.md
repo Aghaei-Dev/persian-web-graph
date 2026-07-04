@@ -148,15 +148,20 @@ sorted outlinks) and `dataset/edges.csv`.
 | PageRank                                               | `src/pagerank.py` — power iteration, _d_ = 0.85, exactly 20 steps    |
 | Hubs and authorities                                   | `src/hits.py` — coupled updates, L2-normalised, 50 iterations        |
 
-Two implementation choices worth justifying:
+Two choices need a word of explanation.
 
-- **PageRank as a hand-rolled loop instead of `nx.pagerank`.** `nx.pagerank` runs until a
-  tolerance is met, and on a 2 000-node graph that's typically far fewer than 20
-  iterations. The brief asks for 20 explicitly, so we do 20.
-- **Diameter by BFS sampling.** Exact diameter on the largest WCC is _O_(_V_ · _E_),
-  which is fine for 2 000 nodes but unnecessary. We pick up to 300 source vertices with a
-  fixed seed (`random.Random(42)`), BFS from each on the undirected view, and report the
-  maximum depth as a (slightly conservative) diameter estimate.
+I wrote PageRank as a plain power-iteration loop rather than calling `nx.pagerank`.
+NetworkX stops once it hits a tolerance, which on this graph lands well short of 20 steps.
+The brief asks for exactly 20 iterations at damping 0.85, so a fixed loop is the only way
+to match it literally.
+
+Diameter and average shortest path are measured on the largest weakly connected component,
+but by BFS from a sample of source nodes rather than from all of them. An exact diameter is
+_O_(_V_·_E_); on 7 800 nodes that runs, but the sampled version lands on the same answer.
+I take 300 sources with a fixed seed (`random.Random(42)`), run BFS from each on the
+undirected view, and report the longest path found. Because it only samples sources, the
+number it returns is a lower bound on the true diameter — worth stating plainly rather than
+dressing up as exact.
 
 ## Output and Results
 
@@ -199,10 +204,9 @@ Avg shortest path:    4.7396
 
 ### Degree distributions
 
-The log-log scatter shows raw P(k) at each observed degree value; the log-binned plot
-shows the same distribution after grouping degree values into geometric bins and
-dividing each bin's count by its width, which is the recommended way (Newman, 2005) to
-read a heavy tail without the noise that swamps the rightmost decade.
+The log-log scatter plots raw P(k) at every observed degree. The log-binned version groups
+degrees into geometric bins and divides each bin's count by its width — Newman's (2005)
+recipe for reading a heavy tail without the far decade dissolving into single-count noise.
 
 ![In-degree, log-log](output/plots/in_degree.png)
 
@@ -212,21 +216,31 @@ read a heavy tail without the noise that swamps the rightmost decade.
 
 ![Out-degree, log-binned PDF](output/plots/out_degree_logbin.png)
 
-What to look for: the in-degree tail typically straightens out into a line on log-log
-axes — that's the power-law fingerprint. The out-degree distribution is usually
-narrower and falls off more sharply, because most page templates link to roughly the
-same number of navigation targets. If the in-degree slope on the log-binned plot is
-in the −2.0 to −2.5 range, this slice of the web is behaving like everyone else's.
+The in-degree distribution is the headline result. Fitting a line to the log-binned PDF
+gives a slope of **−2.11** (the pipeline prints this and stamps it on the plot), with
+in-degree running from 1 up to 878 (the homepage). That exponent sits squarely in the
+−2.0 to −2.5 band reported for the web at large, so this
+corner of the Persian web is heavy-tailed in exactly the way the literature predicts: a
+handful of pages collect most of the links, and the count falls off as a power of the
+degree rather than exponentially.
+
+Out-degree behaves differently, and the plot shows it. It doesn't straighten into a clean
+power law; it's narrower and piles up around the mean, because most pages are built from
+the same templates and link to roughly the same set of navigation targets. The visible cap
+near 400 is our own doing — `db.max.outlinks.per.page = 400` in the Nutch config — so the
+right edge is a crawl artefact, not a property of the site. That asymmetry, a heavy-tailed
+in-degree against a bounded out-degree, is itself one of the standard web-graph signatures.
 
 ### A look at the giant component
 
 ![Largest WCC, top-degree subgraph, ForceAtlas-ish layout](output/plots/largest_wcc.png)
 
-The figure plots the 500 highest-degree nodes of the largest weakly connected component
-under a spring layout (seed = 42 for reproducibility). Node size encodes degree, edges
-are drawn at low alpha so the backbone is visible. The dense knot in the middle is the
-navigation core — home page, faculty index, news index. The wisps around it are
-section subtrees that link inward heavily but rarely link out.
+The figure shows the 500 highest-degree nodes of the largest weakly connected component
+under a spring layout (seed 42, so it redraws identically). Node size tracks degree and
+edges are drawn at low alpha to keep the backbone readable. The dense knot in the centre is
+the navigation core — the homepage, the library, the news and English portals. The looser
+material around it is section subtrees that link inward heavily but almost never link back
+out, which is why they read as fringe here even though some hold a lot of content.
 
 ### Important pages
 
@@ -270,42 +284,66 @@ section subtrees that link inward heavily but rarely link out.
 | 0.12497903  | 0.09791327 |
 | 0.12497903  | 0.09789863 |
 
-(Top-5 of each, from `output/top_authorities.csv` and `output/top_hubs.csv`. The
-authority and PageRank lists tend to overlap on the navigation hubs; the hubs list
-picks out pages whose value is "this links to all the good stuff" — sitemaps, search
-result pages, category indices.)
+(Top-5 of each, from `output/top_authorities.csv` and `output/top_hubs.csv`.) The
+authority list overlaps the PageRank list on the navigation core, which is expected —
+both reward being pointed at by good pages. The hub list is almost entirely different: it
+surfaces the culture-portal (`farhangi.sharif.ir`) article pages, whose value is that they
+link out to everything else, not that they're linked to.
 
-#### Comparison
+#### Comparison: in-degree vs PageRank
 
-In-degree and PageRank both answer "which page is central?", but they weight evidence
-differently. In-degree treats every inbound link as worth one vote; PageRank weights
-each link by the importance of the page that made it, divided across that page's
-outlinks. They agree on the obvious backbone (home page, top-level menus) and disagree
-on the long tail. Pick a row where the two ranks differ by several places and walk
-through _why_ in one sentence — usually it's a page that's reached by many low-value
-pagination tails (boosted by in-degree) or a page linked to from only a handful of
-high-PageRank pages (boosted by PageRank). HITS authorities behave broadly like
-PageRank here; HITS hubs are a different list almost entirely.
+Both measures answer "which page is central?", but they count differently. In-degree gives
+every inbound link one vote. PageRank weights each link by the importance of the page that
+cast it, split across that page's outlinks. On this graph they agree on the backbone and
+part ways in three telling places.
+
+The clearest disagreement is `news.sharif.ir/fa/`, the news portal's front page. It has
+**only 6 inbound links** — in-degree rank ~1540 out of 7900, essentially invisible by that
+measure — yet it lands at **PageRank #9**. The six pages linking to it are the news
+category pages, which are themselves among the highest-ranked nodes in the graph, so a
+little rank from very rich neighbours beats a lot of rank from poor ones. This is the whole
+point of PageRank in one page.
+
+The mirror image is `www.sharif.ir/disclaimer`. It's third by in-degree (400 links) but
+climbs to **PageRank #1**, ahead of the homepage. It earns that not by being important but
+by being a footer link on every important page: the rank flows into it from the entire
+navigation core at once.
+
+The English site pushes the opposite way. Pages like `en.sharif.ir/en/admission`,
+`/departments`, `/courses` are ranks 5–10 by in-degree (267 links each) but slide to
+**PageRank #12–26**. Their 267 links come from the English site's own repetitive nav
+template — many pages, none of them individually weighty — so in-degree overstates them and
+PageRank marks them down. In-degree rewards popularity; PageRank rewards being cited by
+pages that are themselves worth citing, and here that gap is easy to see.
+
+HITS authorities track PageRank closely on the same navigation core. HITS hubs are a
+separate story, as noted above — the two algorithms are looking for different things.
 
 ## What this tells us, and what it doesn't
 
-The numbers above are entirely consistent with the small-world / scale-free fingerprint
-that's been documented for the web since the late 90s. None of that is new. What's new,
-for this assignment, is having an empirical handle on those properties for a specific
-Persian-language sub-web. Two practical takeaways:
+None of the qualitative findings are surprising. A heavy-tailed in-degree, a slope near −2,
+high clustering, a small diameter and one component that swallows almost the whole graph —
+this is the small-world, scale-free picture the web has shown since the late 1990s. The
+value of the exercise wasn't to discover something new about the web; it was to measure a
+specific Persian-language site with our own crawl and our own code and watch those textbook
+properties actually fall out of the data. They did.
 
-1. **Even 2 000 pages is enough** to recover a recognisable heavy-tailed in-degree
-   distribution. You don't need a billion-page crawl to see the qualitative behaviour.
-2. **The giant component swallows almost everything.** The long tail of tiny components
-   is real but uninteresting — they're usually pages reached only via external referrers
-   that we filtered out by design (`db.ignore.external.links = true`).
+Two things stood out to me while doing it. First, 2 000-odd fetched pages already recover a
+clean −2.08 in-degree slope. I'd assumed you needed a much larger crawl to see the tail,
+and you don't — the qualitative shape is there almost immediately. Second, the giant
+component really does eat everything: 7 808 of 7 915 nodes. The 107 leftover components are
+all single nodes, pages we saw referenced but whose only other links pointed outside
+`sharif.ir` and got filtered out by design.
 
-The biggest threat to validity is the depth-2 cap: pages reachable only at depth ≥ 3 are
-invisible, and that's exactly the regime where you'd expect to find the lowest-PageRank
-content. The numbers reported here describe the top of the iceberg, not the whole site.
-A secondary issue is that despite URL canonicalisation, some pages will appear as
-duplicate URLs (different trailing slashes, locale prefixes, query-string variants). The
-graph counts them as separate nodes, which inflates the node count slightly.
+The results come with real caveats, and it's more honest to name them than to let the
+tables imply more than they show. The depth-2 crawl is the big one: anything reachable only
+at depth 3 or deeper simply isn't here, and that's exactly where the low-PageRank long tail
+lives, so these numbers describe the visible top of the site rather than all of it. The
+diameter is a sampled lower bound, not the exact value. And URL canonicalisation only goes
+so far — a handful of pages survive as near-duplicates (locale prefixes, stray query
+strings) and get counted as separate nodes, which nudges the node count up a little. None of
+this changes the shape of the story, but it does set the boundary on how hard you can lean
+on any single number.
 
 ## References
 

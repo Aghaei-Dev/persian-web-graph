@@ -43,12 +43,19 @@ def main(argv: list[str] | None = None) -> int:
                          "In-degree distribution (log-log)",  plot_dir / "in_degree.png")
     plots.loglog_scatter(list(result["out_degrees"].values()),
                          "Out-degree distribution (log-log)", plot_dir / "out_degree.png")
-    plots.logbin_histogram(list(result["in_degrees"].values()),
-                           "In-degree PDF (log-binned)",  plot_dir / "in_degree_logbin.png")
-    plots.logbin_histogram(list(result["out_degrees"].values()),
-                           "Out-degree PDF (log-binned)", plot_dir / "out_degree_logbin.png")
+    in_slope = plots.logbin_histogram(list(result["in_degrees"].values()),
+                                      "In-degree PDF (log-binned)",  plot_dir / "in_degree_logbin.png")
+    out_slope = plots.logbin_histogram(list(result["out_degrees"].values()),
+                                       "Out-degree PDF (log-binned)", plot_dir / "out_degree_logbin.png")
     plots.snapshot(graph.largest_wcc(g), plot_dir / "largest_wcc.png")
     print(f"plots written to {plot_dir}")
+
+    # Record the fitted power-law exponents alongside the other metrics.
+    with (args.out / "metrics.txt").open("a", encoding="utf-8") as fh:
+        if in_slope is not None:
+            fh.write(f"In-degree slope:      {in_slope:.4f}\n")
+        if out_slope is not None:
+            fh.write(f"Out-degree slope:     {out_slope:.4f}\n")
 
     print()
     print(f"N={result['nodes']}  E={result['edges']}  "
