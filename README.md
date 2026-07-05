@@ -2,9 +2,9 @@
 
 ## First things first
 
-**"Reason for Switching from `ut.ac.ir` to `sharif.ir`"** Arvan Cloud was blocking our
+**"Reason for Switching from `ut.ac.ir` to `sharif.ir`"** as we talked in your office: Arvan Cloud was blocking our
 crawler from `ut.ac.ir` and `iran.ir`. Sharif is on a different CDN and responds normally.
-The methodology is identical; only the seed changed.
+things are same just we changed the seed (domain)
 
 **Reason for having 10 seed URL in `nutch/urls/seed.txt`**
 
@@ -23,8 +23,10 @@ https://eri.sharif.ir/
 
 Ten subdomains, not one. The first crawl used only `https://www.sharif.ir/` and produced
 an 86-node star because the homepage links almost entirely to subdomain home pages, and
-those subdomains' home pages are _also_ nav stubs. Starting from ten content-rich
+those subdomains' home pages are also nav stubs. Starting from ten content-rich
 subdomains gets us into actual content within depth 2.
+
+and another reason for that as we talked you said if we extend that to ten we can write a paper with this project findings.
 
 ## What needs to be installed and How to run the Project?
 
@@ -64,7 +66,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-if its not your first time running this project you msut delete all previous data by:
+if its not your first time running this project you msut delete all previous data for a fresh start and run it from scratch by:
 
 ```bash
 # clean previous run if any
@@ -72,7 +74,14 @@ rm -rf data/crawl data/dump output/dataset output/plots output/*.csv \
        output/*.gexf output/*.graphml output/metrics.txt
 ```
 
-after that a fresh run with
+and make sure before running the scripts run this for make them executable:
+
+```bash
+chmod +x ./scripts/crawl.sh
+chmod +x ./scripts/export.sh
+```
+
+after the fresh start and the `chmod` you can finally run the scripts:
 
 ```bash
 ./scripts/crawl.sh                                       # ~30–60 min
@@ -111,7 +120,7 @@ seed.txt ──► Nutch fetch + parse ──► CrawlDb / LinkDb / segments (bi
 The big lesson: Nutch _fetches and parses_, but it speaks SequenceFile. Everything we
 actually care about lives in the **text dumps**, and the Python side reconstructs the
 graph from those. So a Nutch run that "succeeds" but writes the wrong dump shape will
-silently give us an empty graph — see §11 for how to spot that.
+silently give us an empty graph
 
 ---
 
