@@ -1,5 +1,11 @@
 # Structural analysis of a Persian web subgraph
 
+## Video for easy explanation
+
+<video autoplay muted loop playsinline controls width="100%">
+  <source src="/how-to.mp4" type="video/mp4">
+</video>
+
 ## First things first
 
 **"Reason for Switching from `ut.ac.ir` to `sharif.ir`"** as we talked in your office: Arvan Cloud was blocking our
