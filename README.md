@@ -4,6 +4,8 @@
 
 <https://github.com/user-attachments/assets/251c10e0-23e4-4621-97e0-abe787f8d9bf>
 
+for better audio and video quality pleas clone the project and watch the `how-to.webm` in root of project.
+
 ## First things first
 
 **"Reason for Switching from `ut.ac.ir` to `sharif.ir`"** as we talked in your office: Arvan Cloud was blocking our
