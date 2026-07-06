@@ -2,8 +2,8 @@
 
 ## Video for easy explanation
 
-<video autoplay muted loop playsinline controls width="100%">
-  <source src="/how-to.mp4" type="video/mp4">
+<video autoplay muted loop playsinline controls width="900">
+  <source src="./how-to.mp4" type="video/mp4">
 </video>
 
 ## First things first
