@@ -5,7 +5,7 @@ Nutch is shipped with a few different dump tools (`readdb`, `readlinkdb`,
 1.x point releases. Rather than rely on one exact layout, the readers here
 just look for URLs in expected positions and stitch the pieces together. If
 a future Nutch version reorders fields, the worst case is that we lose
-titles — edges still come through.
+titles; edges still come through.
 """
 
 from __future__ import annotations
@@ -148,7 +148,7 @@ def _scan_webgraph_file(path: Path, data: CrawlData, *, outlinks: bool) -> None:
 
 
 # Nutch 1.x readseg dumps emit one record per fetched URL. The fields we care
-# about — URL, Title, and per-outlink toUrl — show up in slightly different
+# about (URL, Title, and per-outlink toUrl) show up in slightly different
 # wrappings across point releases (`Title:`, `title=`, `meta title: ...`),
 # so we match on the leading word loosely.
 _TITLE_RE = re.compile(r"^\s*(?:meta\s+)?title\b\s*[:=]+\s*(.+)$",

@@ -63,7 +63,7 @@
   <property>
     <name>db.ignore.external.links</name>
     <value>true</value>
-    <description>Stay inside the seed domain — internal links only.</description>
+    <description>Stay inside the seed domain: internal links only.</description>
   </property>
 
   <property>
@@ -76,7 +76,7 @@
     <name>db.ignore.internal.links</name>
     <value>false</value>
     <description>LinkDb default is to DROP same-host links (assuming they're nav noise).
-    We want them — that's most of the graph. Without this the log prints
+    We want them; that's most of the graph. Without this the log prints
     "LinkDb: internal links will be ignored." and linkdb.txt ends up empty.</description>
   </property>
 
@@ -108,7 +108,7 @@
   <property>
     <name>parser.skip.truncated</name>
     <value>false</value>
-    <description>Don't drop a parse just because the content was truncated — keep its outlinks.</description>
+    <description>Don't drop a parse just because the content was truncated; keep its outlinks.</description>
   </property>
 
   <property>

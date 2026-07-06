@@ -2,7 +2,7 @@
 # Run a Nutch crawl over *.sharif.ir aiming for ~2 000 fetched pages.
 #
 # Required env:
-#   NUTCH_HOME  — path to apache-nutch-1.22 install (the one that contains bin/nutch)
+#   NUTCH_HOME  : path to apache-nutch-1.22 install (the one that contains bin/nutch)
 #
 # Layout expected (relative to this script):
 #   ../nutch/conf/nutch-site.xml
@@ -30,7 +30,7 @@ mkdir -p "$CRAWL_DIR"
 
 # bin/crawl <seedDir> <crawlDir> <numRounds>
 #   (no -i)               do NOT run the Solr indexing step. We don't have a Solr
-#                         instance, and bin/crawl is `set -e` — if the index step
+#                         instance, and bin/crawl is `set -e`; if the index step
 #                         fails with exit 255 it kills the whole crawl mid-run.
 #                         Our pipeline reads dumps directly, so indexing is unneeded.
 #   --num-fetchers 1      one MapReduce fetcher (single node)
@@ -41,7 +41,7 @@ mkdir -p "$CRAWL_DIR"
 # The assignment specifies depth 2 from a seed. With a multi-seed list, "depth 2"
 # means each seed → its outlinks → those pages' outlinks. `bin/crawl 2` does exactly
 # that. We use 4 rounds because many sharif.ir seeds are themselves nav stubs whose
-# first-hop pages are also nav stubs — depth-2 from the homepage alone returned 85
+# first-hop pages are also nav stubs, depth-2 from the homepage alone returned 85
 # pages; 4 rounds across 10 seeds gets us into the actual content.
 "$NUTCH_HOME/bin/crawl" \
   -s "$SEED_DIR" \

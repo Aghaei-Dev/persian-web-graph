@@ -2,9 +2,9 @@
 # Dump the link structure and per-page metadata from the Nutch crawl.
 #
 # Produces three text artefacts the Python pipeline consumes:
-#   data/dump/crawldb.txt       — one record per known URL (status, score, anchor, title)
-#   data/dump/linkdb.txt        — for each URL, the list of inbound URLs
-#   data/dump/webgraph/         — Nutch WebGraph (nodes/, outlinks/, inlinks/)
+#   data/dump/crawldb.txt       : one record per known URL (status, score, anchor, title)
+#   data/dump/linkdb.txt        : for each URL, the list of inbound URLs
+#   data/dump/webgraph/         : Nutch WebGraph (nodes/, outlinks/, inlinks/)
 
 set -euo pipefail
 
@@ -24,7 +24,7 @@ rm -rf "$DUMP_DIR/crawldb_raw" "$DUMP_DIR/linkdb_raw" "$DUMP_DIR/webgraph"
 mv "$DUMP_DIR/crawldb_raw/part-r-00000" "$DUMP_DIR/crawldb.txt"
 rm -rf "$DUMP_DIR/crawldb_raw"
 
-# 2) LinkDb dump — inbound link graph.
+# 2) LinkDb dump: inbound link graph.
 "$NUTCH_HOME/bin/nutch" readlinkdb "$CRAWL_DIR/linkdb" -dump "$DUMP_DIR/linkdb_raw"
 mv "$DUMP_DIR/linkdb_raw/part-r-00000" "$DUMP_DIR/linkdb.txt"
 rm -rf "$DUMP_DIR/linkdb_raw"

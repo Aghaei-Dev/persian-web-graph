@@ -55,7 +55,7 @@ def _fit_slope(centres: list[float], density: list[float]) -> float | None:
 
 
 def logbin_histogram(degrees: list[int], title: str, path: Path, bins: int = 20) -> float | None:
-    """Log-binned PDF — Newman's recommended way of viewing a heavy tail.
+    """Log-binned PDF, Newman's recommended way of viewing a heavy tail.
 
     Equal-width bins on a log axis under-sample the tail badly; here we use
     geometric bin widths and divide each bin's count by its width. Returns the
@@ -68,7 +68,7 @@ def logbin_histogram(degrees: list[int], title: str, path: Path, bins: int = 20)
 
     lo, hi = min(positive), max(positive)
     if lo == hi:
-        # Degenerate — show as a single bar so the plot still renders.
+        # Degenerate: show as a single bar so the plot still renders.
         fig, ax = plt.subplots(figsize=(6, 4.5))
         ax.bar([lo], [len(positive)], width=0.8)
         ax.set_title(title)

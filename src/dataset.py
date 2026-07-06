@@ -1,4 +1,4 @@
-"""Persist the crawl dataset itself — one of the required deliverables.
+"""Persist the crawl dataset itself, one of the required deliverables.
 
 Two files end up under output/dataset/:
 
