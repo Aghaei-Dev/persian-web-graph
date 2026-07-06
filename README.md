@@ -2,9 +2,7 @@
 
 ## Video for easy explanation
 
-<video autoplay muted loop playsinline controls width="900">
-  <source src="./how-to.mp4" type="video/mp4">
-</video>
+<https://github.com/user-attachments/assets/251c10e0-23e4-4621-97e0-abe787f8d9bf>
 
 ## First things first
 
